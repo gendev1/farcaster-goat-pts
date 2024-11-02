@@ -1,44 +1,32 @@
-# Farcaster Moxie Frame
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A Rust-based Farcaster Frame application deployable on AWS Lightsail.
+## Getting Started
 
-## Overview
+First, run the development server:
 
-This project demonstrates how to build and deploy a Farcaster Frame application using Rust. It's designed to be hosted on AWS Lightsail and includes interactive elements for the Farcaster ecosystem.
+```bash
 
-## Key Features
+yarn dev
 
-- Built with Rust and Actix-web
-- Deployable on AWS Lightsail
-- Implements Farcaster Frame specifications
-- Includes interactive button states
+```
 
-## Quick Start
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-1. Clone the repository
-2. Install Rust
-3. Run `cargo build`
-4. Configure AWS Lightsail
-5. Deploy using the provided guide
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-For detailed instructions, see the [Full Deployment Guide](DEPLOYMENT.md).
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Technologies Used
+## Learn More
 
-- Rust
-- Actix-web
-- AWS Lightsail
-- Nginx
-- SSL/TLS (Certbot)
+To learn more about Next.js, take a look at the following resources:
 
-## Community
+-   [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+-   [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-Join the discussion about this project and other Farcaster Frames in the [GoatRollup Channel](https://warpcast.com/~/channel/goatrollup) on Warpcast.
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## License
+## Deploy on Vercel
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
----
-
-For more information on Farcaster Frames and how to use this repository, check out our [Full Deployment Guide](DEPLOYMENT.md).
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
