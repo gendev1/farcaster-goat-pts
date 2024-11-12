@@ -13,7 +13,9 @@ import {
     UserIcon,
     StarIcon,
     CrownIcon,
-    BitcoinIcon
+    BitcoinIcon,
+    RefreshCcw,
+    AlertCircle
 } from 'lucide-react';
 import {
     LineChart,
@@ -41,8 +43,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { motion } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Skeleton } from "@/components/ui/skeleton";
 
-// GOAT Club data
+// TODO: Replace with API call to fetch GOAT Club data
+// This could come from a backend service tracking user activities and metrics
 const GOATClubData: Category[] = [
     {
         title: 'Wallets Most Active by DAU',
@@ -130,7 +136,9 @@ const GOATClubData: Category[] = [
         ]
     }
 ];
-// Project data
+
+// TODO: Replace with API call to fetch project metrics
+// This could be fetched from blockchain indexers and project analytics
 const projectData: Project[] = [
     {
         id: '1',
@@ -173,7 +181,8 @@ const projectData: Project[] = [
     },
 ];
 
-// Quest Leaderboard data
+// TODO: Replace with API call to fetch quest completion data
+// This could be fetched from smart contracts tracking quest completions
 const questLeaderboardData: QuestLeaderboardEntry[] = [
     {
         id: '1',
@@ -370,47 +379,63 @@ const ActivitySparkline = ({ data }: { data: TrendData[] }) => {
     );
 };
 
+// Enhanced Leader Card Component
 const LeaderCard = ({ category }: { category: Category }) => {
+    // TODO: Add real-time updates using WebSocket
+    // useEffect(() => {
+    //     const ws = new WebSocket('wss://api.example.com/leaderboard');
+    //     ws.onmessage = (event) => {
+    //         // Update category data
+    //     };
+    //     return () => ws.close();
+    // }, []);
+
     return (
-        <Card className="hover:shadow-lg transition-all duration-200">
-            <CardHeader className="space-y-1">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 bg-yellow-400 rounded-lg">
-                            {category.icon}
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+            <Card className="hover:shadow-lg transition-all duration-200">
+                <CardHeader className="space-y-1">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-yellow-400 rounded-lg">
+                                {category.icon}
+                            </div>
+                            <CardTitle className="text-xl font-bold">{category.title}</CardTitle>
                         </div>
-                        <CardTitle className="text-xl font-bold">{category.title}</CardTitle>
+                        <TrophyIcon className="w-6 h-6 text-yellow-500" />
                     </div>
-                    <TrophyIcon className="w-6 h-6 text-yellow-500" />
-                </div>
-                <CardDescription>{category.description}</CardDescription>
-                <ActivitySparkline data={category.trend} />
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                    {category.wallets.map((wallet, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-gray-100">
-                            <div className="flex items-center space-x-3">
-                                <Badge variant={index === 0 ? "default" : "secondary"} className="w-6 h-6 rounded-full flex items-center justify-center">
-                                    {wallet.rank}
-                                </Badge>
-                                <Link href={`/profile/${wallet.address}`} className="text-blue-600 hover:underline font-mono">
-                                    {wallet.address}
-                                </Link>
+                    <CardDescription>{category.description}</CardDescription>
+                    <ActivitySparkline data={category.trend} />
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {category.wallets.map((wallet, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-gray-100">
+                                <div className="flex items-center space-x-3">
+                                    <Badge variant={index === 0 ? "default" : "secondary"} className="w-6 h-6 rounded-full flex items-center justify-center">
+                                        {wallet.rank}
+                                    </Badge>
+                                    <Link href={`/profile/${wallet.address}`} className="text-blue-600 hover:underline font-mono">
+                                        {wallet.address}
+                                    </Link>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <span className="font-bold">{wallet.score}</span>
+                                    {wallet.change === 'up' ? (
+                                        <ArrowUpIcon className="w-4 h-4 text-green-500" />
+                                    ) : wallet.change === 'down' ? (
+                                        <ArrowDownIcon className="w-4 h-4 text-red-500" />
+                                    ) : null}
+                                </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <span className="font-bold">{wallet.score}</span>
-                                {wallet.change === 'up' ? (
-                                    <ArrowUpIcon className="w-4 h-4 text-green-500" />
-                                ) : wallet.change === 'down' ? (
-                                    <ArrowDownIcon className="w-4 h-4 text-red-500" />
-                                ) : null}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 };
 
@@ -419,13 +444,19 @@ function DataTable<TData, TValue>({
     data,
     title,
     description,
-    filterColumn = 'name'
+    filterColumn = 'name',
+    isLoading = false,
+    error = null,
+    onRetry
 }: { 
     columns: ColumnDef<TData, TValue>[]; 
     data: TData[];
     title: string;
     description?: string;
     filterColumn?: string;
+    isLoading?: boolean;
+    error?: string | null;
+    onRetry?: () => void;
 }) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -447,6 +478,34 @@ function DataTable<TData, TValue>({
             columnVisibility,
         },
     });
+
+    if (error) {
+        return (
+            <Card className="w-full">
+                <CardContent className="flex flex-col items-center justify-center py-10">
+                    <AlertCircle className="h-10 w-10 text-destructive mb-4" />
+                    <p className="text-destructive">{error}</p>
+                    <Button variant="outline" className="mt-4" onClick={onRetry}>
+                        Retry
+                    </Button>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (isLoading) {
+        return (
+            <Card className="w-full">
+                <CardContent className="py-10">
+                    <div className="space-y-4">
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-3/4" />
+                        <Skeleton className="h-8 w-full" />
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card className="w-full">
@@ -570,32 +629,94 @@ function DataTable<TData, TValue>({
 
 // Stats Overview Component
 const StatsOverview = () => {
+    // TODO: Replace with real-time metrics from backend
+    // const { data: stats, isLoading } = useQuery('stats', fetchStats);
     const stats = [
-        { title: "Total Participants", value: "12.5K", icon: <UserIcon />, change: "+12%" },
-        { title: "Active Wallets", value: "8.2K", icon: <ActivityIcon />, change: "+5%" },
-        { title: "Total Rewards", value: "1.2M", icon: <AwardIcon />, change: "+8%" },
-        { title: "Competition Score", value: "92", icon: <TrendingUpIcon />, change: "+3%" }
+        { 
+            title: "Total Participants", 
+            value: "12.5K", 
+            icon: <UserIcon />, 
+            change: "+12%",
+            trend: [
+                { day: 'Mon', value: 80 },
+                { day: 'Tue', value: 85 },
+                { day: 'Wed', value: 90 },
+                { day: 'Thu', value: 95 },
+                { day: 'Fri', value: 100 }
+            ]
+        },
+        { 
+            title: "Active Wallets", 
+            value: "8.2K", 
+            icon: <ActivityIcon />, 
+            change: "+5%",
+            trend: [
+                { day: 'Mon', value: 75 },
+                { day: 'Tue', value: 78 },
+                { day: 'Wed', value: 80 },
+                { day: 'Thu', value: 82 },
+                { day: 'Fri', value: 85 }
+            ]
+        },
+        { 
+            title: "Total Rewards", 
+            value: "1.2M", 
+            icon: <AwardIcon />, 
+            change: "+8%",
+            trend: [
+                { day: 'Mon', value: 100 },
+                { day: 'Tue', value: 105 },
+                { day: 'Wed', value: 110 },
+                { day: 'Thu', value: 115 },
+                { day: 'Fri', value: 120 }
+            ]
+        },
+        { 
+            title: "Competition Score", 
+            value: "92", 
+            icon: <TrendingUpIcon />, 
+            change: "+3%",
+            trend: [
+                { day: 'Mon', value: 90 },
+                { day: 'Tue', value: 92 },
+                { day: 'Wed', value: 94 },
+                { day: 'Thu', value: 96 },
+                { day: 'Fri', value: 98 }
+            ]
+        }
     ];
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat, index) => (
-                <Card key={index}>
-                    <CardContent className="flex flex-col gap-3 pt-6">
-                        <div className="flex items-center justify-between">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                {React.cloneElement(stat.icon, { className: "w-5 h-5 text-purple-600" })}
+                <TooltipProvider key={index}>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Card className="hover:shadow-md transition-all duration-200">
+                                <CardContent className="flex flex-col gap-3 pt-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="p-2 bg-purple-100 rounded-lg">
+                                            {React.cloneElement(stat.icon, { className: "w-5 h-5 text-purple-600" })}
+                                        </div>
+                                        <Badge variant="outline" className="text-green-600">
+                                            {stat.change}
+                                        </Badge>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-600">{stat.title}</p>
+                                        <p className="text-2xl font-bold">{stat.value}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Trend over last 30 days</p>
+                            <div className="w-32 h-16">
+                                <ActivitySparkline data={stat.trend} />
                             </div>
-                            <Badge variant="outline" className="text-green-600">
-                                {stat.change}
-                            </Badge>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-600">{stat.title}</p>
-                            <p className="text-2xl font-bold">{stat.value}</p>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             ))}
         </div>
     );
@@ -603,15 +724,105 @@ const StatsOverview = () => {
 
 // Enhanced Main Component
 export default function LeaderboardPage() {
+    // TODO: Replace with real data fetching
+    // const { data: progress, isLoading } = useQuery('seasonProgress', fetchSeasonProgress);
     const [progress] = React.useState(85);
+    const [lastUpdate, setLastUpdate] = React.useState(new Date());
+    const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+    // TODO: Implement real data refresh logic
+    const refreshData = async () => {
+        setIsRefreshing(true);
+        try {
+            // await Promise.all([
+            //     refetchGOATData(),
+            //     refetchProjectData(),
+            //     refetchQuestData()
+            // ]);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Remove this when implementing real refresh
+        } catch (error) {
+            console.error('Failed to refresh data:', error);
+            // TODO: Add error handling
+            // toast.error('Failed to refresh data');
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
+    // TODO: Add real-time updates using WebSocket
+    // React.useEffect(() => {
+    //     const ws = new WebSocket('wss://api.example.com/leaderboard');
+    //     ws.onmessage = (event) => {
+    //         const data = JSON.parse(event.data);
+    //         // Update relevant state based on data type
+    //         switch (data.type) {
+    //             case 'GOAT_UPDATE':
+    //                 // Update GOAT club data
+    //                 break;
+    //             case 'PROJECT_UPDATE':
+    //                 // Update project data
+    //                 break;
+    //             case 'QUEST_UPDATE':
+    //                 // Update quest data
+    //                 break;
+    //         }
+    //     };
+    //     return () => ws.close();
+    // }, []);
+
+    // TODO: Add data fetching states
+    // if (isLoading) {
+    //     return <LoadingSpinner />;
+    // }
+    
+    // if (error) {
+    //     return <ErrorState error={error} retry={refreshData} />;
+    // }
+
+    React.useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                refreshData();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, []);
 
     return (
         <div className="container mx-auto py-10 space-y-8">
-            <div className="flex flex-col space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Leaderboard</h1>
-                <p className="text-muted-foreground">
-                    Track top performers across different categories
-                </p>
+            <div className="flex justify-between items-center">
+                <div className="flex flex-col space-y-2">
+                    <h1 className="text-3xl font-bold tracking-tight">Leaderboard</h1>
+                    <p className="text-muted-foreground">
+                        Track top performers across different categories
+                    </p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <p className="text-sm text-muted-foreground">
+                        Last updated: {lastUpdate.toLocaleTimeString()}
+                    </p>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={refreshData}
+                        disabled={isRefreshing}
+                    >
+                        {isRefreshing ? (
+                            <>
+                                <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
+                                Refreshing...
+                            </>
+                        ) : (
+                            <>
+                                <RefreshCcw className="mr-2 h-4 w-4" />
+                                Refresh
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
             
             <StatsOverview />
@@ -685,3 +896,22 @@ export default function LeaderboardPage() {
         </div>
     );
 }
+
+// TODO: Add API integration utilities
+// const fetchGOATData = async () => {
+//     const response = await fetch('/api/leaderboard/goat');
+//     if (!response.ok) throw new Error('Failed to fetch GOAT data');
+//     return response.json();
+// };
+
+// const fetchProjectData = async () => {
+//     const response = await fetch('/api/leaderboard/projects');
+//     if (!response.ok) throw new Error('Failed to fetch project data');
+//     return response.json();
+// };
+
+// const fetchQuestData = async () => {
+//     const response = await fetch('/api/leaderboard/quests');
+//     if (!response.ok) throw new Error('Failed to fetch quest data');
+//     return response.json();
+// };
