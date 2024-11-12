@@ -35,12 +35,16 @@ const AnalyticsPage = () => {
             <div className="mb-6">
                 <RealTimeChart />
             </div>
+
+            {/* High-Level Metrics */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <MetricCard title="Daily Active Users" value={latestData.dau.toLocaleString()} change="+5%" />
+                <MetricCard title="Daily Transactions (TRX)" value={latestData.trx.toLocaleString()} change="+7%" />
+                <MetricCard title="Daily Transaction Volume (DTV)" value={`$${latestData.dtv? latestData.dtv.toLocaleString(): '0'}`} change="+10%" />
+                <MetricCard title="TVL" value={`$${((latestData?.tvl ?? 0) / 1000000).toFixed(2)}M`} change="+10%"/>
+            </div>
+
             <div className="grid gap-6 lg:grid-cols-4">
-                <div className="space-y-6 lg:col-span-1">
-                    <MetricCard title="Total Value Locked (TVL)" value={`$${((latestData?.tvl ?? 0) / 1000000).toFixed(2)}M`} change="+10%" />
-                    <MetricCard title="Daily Active Users (DAU)" value={latestData.dau.toLocaleString()} change="+5%" />
-                    <MetricCard title="Daily Transactions (TRX)" value={latestData.trx.toLocaleString()} change="+7%" />
-                </div>
                 <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle>{getChartTitle(activeTab)}</CardTitle>
