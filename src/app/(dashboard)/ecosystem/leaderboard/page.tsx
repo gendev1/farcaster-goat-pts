@@ -249,6 +249,31 @@ type Category = {
     wallets: Wallet[];
 };
 
+type Stats = {
+    title: string;
+    value: string;
+    icon: React.ReactNode;
+    change: string;
+    trend: TrendData[];
+};
+
+type ActivitySparklineProps = {
+    data: TrendData[];
+    height?: number;
+    strokeColor?: string;
+};
+
+type DataTableProps<TData, TValue> = {
+    columns: ColumnDef<TData, TValue>[];
+    data: TData[];
+    title: string;
+    description?: string;
+    filterColumn?: string;
+    isLoading?: boolean;
+    error?: Error | null;
+    onRetry?: () => void;
+};
+
 const projectColumns: ColumnDef<Project>[] = [
     {
         accessorKey: 'name',
@@ -361,15 +386,19 @@ const questLeaderboardColumns: ColumnDef<QuestLeaderboardEntry>[] = [
     },
 ];
 
-const ActivitySparkline = ({ data }: { data: TrendData[] }) => {
+const ActivitySparkline = ({ data, height = 40, strokeColor = "#8884d8" }: ActivitySparklineProps) => {
+    if (!data) {
+        return <Skeleton className={`w-full h-[${height}px]`} />;
+    }
+
     return (
-        <div className="h-[40px] mt-2">
+        <div className={`h-[${height}px] mt-2`}>
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
                     <Line
                         type="monotone"
                         dataKey="value"
-                        stroke="#8884d8"
+                        stroke={strokeColor}
                         strokeWidth={2}
                         dot={false}
                     />
@@ -439,8 +468,8 @@ const LeaderCard = ({ category }: { category: Category }) => {
     );
 };
 
-function DataTable<TData, TValue>({ 
-    columns, 
+function DataTable<TData, TValue>({
+    columns,
     data,
     title,
     description,
@@ -448,16 +477,7 @@ function DataTable<TData, TValue>({
     isLoading = false,
     error = null,
     onRetry
-}: { 
-    columns: ColumnDef<TData, TValue>[]; 
-    data: TData[];
-    title: string;
-    description?: string;
-    filterColumn?: string;
-    isLoading?: boolean;
-    error?: string | null;
-    onRetry?: () => void;
-}) {
+}: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -484,7 +504,7 @@ function DataTable<TData, TValue>({
             <Card className="w-full">
                 <CardContent className="flex flex-col items-center justify-center py-10">
                     <AlertCircle className="h-10 w-10 text-destructive mb-4" />
-                    <p className="text-destructive">{error}</p>
+                    <p className="text-destructive">{error.message || 'An error occurred'}</p>
                     <Button variant="outline" className="mt-4" onClick={onRetry}>
                         Retry
                     </Button>
@@ -508,10 +528,23 @@ function DataTable<TData, TValue>({
     }
 
     return (
-        <Card className="w-full">
+        <Card>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                {description && <CardDescription>{description}</CardDescription>}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle>{title}</CardTitle>
+                        {description && <CardDescription>{description}</CardDescription>}
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onRetry}
+                        disabled={isLoading}
+                    >
+                        <RefreshCcw className="mr-2 h-4 w-4" />
+                        {isLoading ? 'Refreshing...' : 'Refresh'}
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
                 <div className="flex items-center justify-between py-4">
