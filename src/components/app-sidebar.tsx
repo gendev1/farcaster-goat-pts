@@ -76,7 +76,7 @@ const data = {
     navSecondary: [
         {
             title: 'Support',
-            url: '#',
+            url: '/ecosystem/support',
             icon: LifeBuoy,
         },
         {
