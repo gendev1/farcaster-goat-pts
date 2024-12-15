@@ -26,7 +26,7 @@ const Page = () => {
           value={feedback}
           onChange={handleFeedbackChange}
           placeholder="Write your feedback here..."
-          rows="6"
+          rows={6}
           className="w-full p-2 border border-gray-300 rounded-md mb-4"
         ></textarea>
 
