@@ -25,50 +25,50 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 // GOAT Club data
-const GOATClubData = [
+const GOATClubData: Category[] = [
     {
         title: 'Wallets Most Active by DAU',
         description: 'Top performers based on daily active usage',
         wallets: [
-            { address: '0x1234...5678', score: 95, change: 'up', rank: 1 },
-            { address: '0x2345...6789', score: 88, change: 'down', rank: 2 },
-            { address: '0x3456...7890', score: 82, change: 'up', rank: 3 }
+            { address: '0x1234...5678', score: 95, change: 'up' as const, rank: 1 },
+            { address: '0x2345...6789', score: 88, change: 'down' as const, rank: 2 },
+            { address: '0x3456...7890', score: 82, change: 'up' as const, rank: 3 }
         ]
     },
     {
         title: 'Wallets Most Bullish by TRX',
         description: 'Most optimistic wallets by transaction volume',
         wallets: [
-            { address: '0x4567...8901', score: 92, change: 'up', rank: 1 },
-            { address: '0x5678...9012', score: 85, change: 'up', rank: 2 },
-            { address: '0x6789...0123', score: 79, change: 'down', rank: 3 }
+            { address: '0x4567...8901', score: 92, change: 'up' as const, rank: 1 },
+            { address: '0x5678...9012', score: 85, change: 'up' as const, rank: 2 },
+            { address: '0x6789...0123', score: 79, change: 'down' as const, rank: 3 }
         ]
     },
     {
         title: 'Wallets Whales by TVL',
         description: 'Top wallets by total value locked',
         wallets: [
-            { address: '0x7890...1234', score: 100, change: 'up', rank: 1 },
-            { address: '0x8901...2345', score: 95, change: 'stable', rank: 2 },
-            { address: '0x9012...3456', score: 90, change: 'down', rank: 3 }
+            { address: '0x7890...1234', score: 100, change: 'up' as const, rank: 1 },
+            { address: '0x8901...2345', score: 95, change: 'stable' as const, rank: 2 },
+            { address: '0x9012...3456', score: 90, change: 'down' as const, rank: 3 }
         ]
     },
     {
         title: 'Wallets with Most Quest Points',
         description: 'Leading wallets by quest completion points',
         wallets: [
-            { address: '0x0123...4567', score: 87, change: 'up', rank: 1 },
-            { address: '0x1234...5678', score: 84, change: 'down', rank: 2 },
-            { address: '0x2345...6789', score: 80, change: 'up', rank: 3 }
+            { address: '0x0123...4567', score: 87, change: 'up' as const, rank: 1 },
+            { address: '0x1234...5678', score: 84, change: 'down' as const, rank: 2 },
+            { address: '0x2345...6789', score: 80, change: 'up' as const, rank: 3 }
         ]
     },
     {
         title: 'Wallets with the Most BTC',
         description: 'Wallets with the highest Bitcoin holdings',
         wallets: [
-            { address: '0x3456...7890', score: 98, change: 'up', rank: 1 },
-            { address: '0x4567...8901', score: 93, change: 'stable', rank: 2 },
-            { address: '0x5678...9012', score: 89, change: 'down', rank: 3 }
+            { address: '0x3456...7890', score: 98, change: 'up' as const, rank: 1 },
+            { address: '0x4567...8901', score: 93, change: 'stable' as const, rank: 2 },
+            { address: '0x5678...9012', score: 89, change: 'down' as const, rank: 3 }
         ]
     }
 ];
@@ -275,7 +275,23 @@ const questLeaderboardColumns: ColumnDef<QuestLeaderboardEntry>[] = [
     },
 ];
 
-const LeaderCard = ({ category }) => {
+// Add type definition for wallet
+type Wallet = {
+    address: string;
+    score: number;
+    change: 'up' | 'down' | 'stable';
+    rank: number;
+};
+
+// Add type definition for category
+type Category = {
+    title: string;
+    description: string;
+    wallets: Wallet[];
+};
+
+// Update LeaderCard component with proper type
+const LeaderCard = ({ category }: { category: Category }) => {
     return (
         <Card className="hover:shadow-lg transition-shadow duration-200">
             <CardHeader className="space-y-1">
@@ -301,9 +317,9 @@ const LeaderCard = ({ category }) => {
                                 <span className="font-bold">{wallet.score}</span>
                                 {wallet.change === 'up' ? (
                                     <ArrowUpIcon className="w-4 h-4 text-green-500" />
-                                ) : (
+                                ) : wallet.change === 'down' ? (
                                     <ArrowDownIcon className="w-4 h-4 text-red-500" />
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     ))}
@@ -317,12 +333,14 @@ function DataTable<TData, TValue>({
     columns, 
     data,
     title,
-    description 
+    description,
+    filterColumn = 'name'
 }: { 
     columns: ColumnDef<TData, TValue>[]; 
     data: TData[];
     title: string;
     description?: string;
+    filterColumn?: string;
 }) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -358,7 +376,7 @@ function DataTable<TData, TValue>({
                             placeholder="Filter entries..."
                             className="max-w-sm"
                             onChange={(event) =>
-                                table.getColumn(columns[0].accessorKey as string)?.setFilterValue(event.target.value)
+                                table.getColumn(filterColumn || 'name')?.setFilterValue(event.target.value)
                             }
                         />
                         <Badge variant="outline" className="h-8 px-3">
