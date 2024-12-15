@@ -243,7 +243,7 @@ function ProjectModal({ project, onClose }: { project: (typeof projects)[0]; onC
                         Twitter
                     </a>
                 </div>
-                <Accordion>
+                <Accordion type="single">
                     <AccordionItem value="details">
                         <AccordionTrigger>Details</AccordionTrigger>
                         <AccordionContent>
